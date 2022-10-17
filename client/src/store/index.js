@@ -116,7 +116,7 @@ export const useGlobalStore = () => {
         async function asyncChangeListName(id) {
             let response = await api.getPlaylistById(id);
             if (response.data.success) {
-                let playlist = response.data.playist;
+                let playlist = response.data.playlist;
                 playlist.name = newName;
                 async function updateList(playlist) {
                     response = await api.updatePlaylistById(playlist._id, playlist);
@@ -141,6 +141,36 @@ export const useGlobalStore = () => {
             }
         }
         asyncChangeListName(id);
+    }
+
+
+    store.createNewList = function () {
+        async function asyncCreateNewList() {
+            //let index = store.getPlaylistSize();
+            let body = {"name": "Untitled", "songs": []}
+            let response = await api.createNewList(body);
+            if (response.data.success) {
+                let playlist = response.data.playlist;
+                async function getListPairs(playlist) {
+                    response = await api.getPlaylistPairs();
+                    console.log(response.data.success);
+                    if (response.data.success) {
+                        let pairsArray = response.data.idNamePairs;
+                        console.log(pairsArray);
+                        storeReducer({
+                            type: GlobalStoreActionType.CREATE_NEW_LIST,
+                            payload: {
+                                idNamePairs: pairsArray,
+                                playlist: playlist
+                            }
+                        });
+                    }
+                }
+                getListPairs(playlist);
+                store.setCurrentList(playlist._id);
+            }
+        }
+        asyncCreateNewList();
     }
 
     // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST
@@ -171,6 +201,7 @@ export const useGlobalStore = () => {
 
     store.setCurrentList = function (id) {
         async function asyncSetCurrentList(id) {
+            console.log(id);
             let response = await api.getPlaylistById(id);
             if (response.data.success) {
                 let playlist = response.data.playlist;
@@ -203,6 +234,7 @@ export const useGlobalStore = () => {
             payload: null
         });
     }
+
 
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };

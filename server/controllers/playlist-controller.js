@@ -86,10 +86,52 @@ getPlaylistPairs = async (req, res) => {
         }
     }).catch(err => console.log(err))
 }
+/** 
+updatePlaylistById = async (req, res) => {
+    await Playlist.findOne({ _id: req.params.id }, (err, list) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+        list.name = req.params.playlist;
+        lis.save();
+
+        return res.status(200).json({ success: true, playlist: list })
+    }).catch(err => console.log(err))
+}
+*/
+
+updatePlaylistById = async (req, res) => {
+    const body = req.body
+    if (!body) {
+        return res.status(400).json({
+            success: false,
+            error: 'You must provide a playlist to rename',
+    })
+    }
+    Playlist.findOne({ _id: req.params.id }, (err, list) => {
+        if (err) {
+            return res.status(404).json({ err, message: 'Playlist not found!', })
+    }
+    list.name = body.name
+
+    list
+    .save()
+    .then(() => { 
+        return res.status(200).json({ success: true, id: list._id, message: 'Playlist updated!', })
+    })
+    .catch(error => {
+    return res.status(404).json({
+                        error,
+    message: 'Movie not updated!',
+    })
+    })
+    })
+    }
 
 module.exports = {
     createPlaylist,
     getPlaylists,
     getPlaylistPairs,
-    getPlaylistById
+    getPlaylistById,
+    updatePlaylistById
 }
