@@ -34,10 +34,31 @@ function SongCard(props) {
         let sourceId = event.dataTransfer.getData("item");
         sourceId = sourceId.substring(sourceId.indexOf("-") + 1);
         setDraggedTo(false);
-        console.log('po')
         console.log(parseInt(sourceId.substring(0,1)));
         console.log(targetId);
         store.moveSong(parseInt(sourceId.substring(0,1)), parseInt(targetId.substring(0,1)));
+    }
+
+    function handleEdit(event) {
+        let _id = event.target;
+        console.log(index);
+        editSong(index);
+    }
+
+    function editSong(_id) {
+        store.showEditSongModal(_id);
+        //store.editSong(_id);
+    }
+
+    function handleDelete(event) {
+        let _id = event.target;
+        console.log(index);
+        deleteSong(index);
+    }
+
+    function deleteSong(_id) {
+        store.showDeleteSongModal(_id);
+        //store.editSong(_id);
     }
 
     return (
@@ -50,6 +71,7 @@ function SongCard(props) {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onDoubleClick={handleEdit}
             draggable="true"
         >
             {index + 1}.
@@ -63,6 +85,7 @@ function SongCard(props) {
                 type="button"
                 id={"remove-song-" + index}
                 className="list-card-button"
+                onClick={handleDelete}
                 value={"\u2715"}
             />
         </div>

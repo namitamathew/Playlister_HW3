@@ -42,11 +42,12 @@ function ListCard(props) {
 
     function handleDeleteList(event) {
         event.stopPropagation();
-        deleteList();
+        let _id = event.target;
+        deleteList(_id);
     }
 
-    function deleteList() {
-        store.markListForDeletion();
+    function deleteList(_id) {
+        store.markListForDeletion(_id);
     }
 
     function handleKeyPress(event) {

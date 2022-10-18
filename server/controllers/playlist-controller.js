@@ -113,6 +113,7 @@ updatePlaylistById = async (req, res) => {
             return res.status(404).json({ err, message: 'Playlist not found!', })
     }
     list.name = body.name
+    list.songs = body.songs
 
     list
     .save()
