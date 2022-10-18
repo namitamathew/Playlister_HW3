@@ -36,6 +36,7 @@ export const useGlobalStore = () => {
         newListCounter: 0,
         listNameActive: false,
         songEditActive: -1,
+        songDeleteActive: -1,
         listMarkedForDeletion: null
     });
 
@@ -52,6 +53,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 });
             }
@@ -62,7 +64,8 @@ export const useGlobalStore = () => {
                     currentList: null,
                     newListCounter: store.newListCounter,
                     listNameActive: false,
-                    songEditActive: -1,
+                    songEditActive: -1, 
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 })
             }
@@ -74,6 +77,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter + 1,
                     listNameActive: false,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 })
             }
@@ -85,6 +89,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 });
             }
@@ -96,6 +101,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: payload._id
                 });
             }
@@ -107,6 +113,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 });
             }
@@ -118,6 +125,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: true,
                     songEditActive: -1,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 });
             }
@@ -127,6 +135,7 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: true,
                     songEditActive: payload,
+                    songDeleteActive: -1,
                     listMarkedForDeletion: null
                 });
             }
@@ -421,7 +430,7 @@ export const useGlobalStore = () => {
     store.showDeleteSongModal = function(id) {
         let modal = document.getElementById("delete-song-modal");
         modal.classList.add("is-visible");
-        store.songEditActive = id
+        store.songDeleteActive = id;
 
     }
     store.hideDeleteSongModal = function() {
@@ -430,7 +439,9 @@ export const useGlobalStore = () => {
     }
 
     store.deleteSong = function(id) {
-        store.currentList.songs.splice(id, 1);
+        console.log(store.songEditActive);
+        store.currentList.songs.splice(store.songDeleteActive, 1);
+        console.log(store.currentList.songs)
         store.refreshCurrentList(store.currentList._id);
     }
 
