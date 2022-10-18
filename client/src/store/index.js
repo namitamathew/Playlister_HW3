@@ -234,12 +234,45 @@ export const useGlobalStore = () => {
                         type: GlobalStoreActionType.SET_CURRENT_LIST,
                         payload: playlist
                     });
+                    console.log('success')
                     store.history.push("/playlist/" + playlist._id);
                 }
             }
         }
         asyncSetCurrentList(id);
     }
+
+    store.refreshCurrentList = function (id) {
+        async function asyncChangeListSongs(id) {
+            let response = await api.getPlaylistById(id);
+            if (response.data.success) {
+                let playlist = response.data.playlist;
+                playlist.songs = store.currentList.songs;
+                async function updateList(playlist) {
+                    response = await api.updatePlaylistById(playlist._id, playlist);
+                    if (response.data.success) {
+                        async function getListPairs(playlist) {
+                            response = await api.getPlaylistPairs();
+                            if (response.data.success) {
+                                let pairsArray = response.data.idNamePairs;
+                                storeReducer({
+                                    type: GlobalStoreActionType.CHANGE_LIST_NAME,
+                                    payload: {
+                                        idNamePairs: pairsArray,
+                                        playlist: playlist
+                                    }
+                                });
+                            }
+                        }
+                        getListPairs(playlist);
+                    }
+                }
+                updateList(playlist);
+            }
+        }
+        asyncChangeListSongs(id);
+    }
+
     store.getPlaylistSize = function() {
         return store.currentList.songs.length;
     }
@@ -332,6 +365,31 @@ export const useGlobalStore = () => {
             }
         }
         asyncCreateNewSong();
+    }
+
+    store.moveSong = function (start, end) {
+        console.log('rabdom')
+        console.log(start);
+        console.log(end);
+        if (start < end) {
+            let t = store.currentList.songs[start];
+            for (let i = start; i < end; i++) {
+                store.currentList.songs[i] = store.currentList.songs[i + 1];
+            }
+            store.currentList.songs[end] = t;
+        }
+        else if (start > end) {
+            let t = store.currentList.songs[start];
+            for (let i = start; i > end; i--) {
+                store.currentList.songs[i] = store.currentList.songs[i - 1];
+            }
+            store.currentList.songs[end] = t;
+        }
+
+        console.log(store.currentList.songs)
+
+        store.refreshCurrentList(store.currentList._id);
+        
     }
 
 
