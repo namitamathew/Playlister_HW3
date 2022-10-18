@@ -122,10 +122,22 @@ updatePlaylistById = async (req, res) => {
     .catch(error => {
     return res.status(404).json({
                         error,
-    message: 'Movie not updated!',
+    message: 'Playlist not updated!',
     })
     })
     })
+    }
+
+deletePlaylistById = async (req, res) => {
+    await Playlist.findOneAndDelete({ _id: req.params.id }, (err, list) => {
+    if (err) {
+    return res.status(400).json({ success: false, error: err })
+    }
+    if (!list) {
+    return res.status(404).json({ success: false, error: `Playlist not found` })
+    }
+    return res.status(200).json({ success: true, data: list })
+    }).catch(err => console.log(err))
     }
 
 module.exports = {
@@ -133,5 +145,6 @@ module.exports = {
     getPlaylists,
     getPlaylistPairs,
     getPlaylistById,
-    updatePlaylistById
+    updatePlaylistById,
+    deletePlaylistById
 }

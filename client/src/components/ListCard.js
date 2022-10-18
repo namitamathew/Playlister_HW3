@@ -40,6 +40,15 @@ function ListCard(props) {
         setEditActive(newActive);
     }
 
+    function handleDeleteList(event) {
+        event.stopPropagation();
+        deleteList();
+    }
+
+    function deleteList() {
+        store.markListForDeletion();
+    }
+
     function handleKeyPress(event) {
         if (event.code === "Enter") {
             let id = event.target.id.substring("list-".length);
@@ -76,6 +85,7 @@ function ListCard(props) {
                 type="button"
                 id={"delete-list-" + idNamePair._id}
                 className="list-card-button"
+                onClick={handleDeleteList}
                 value={"\u2715"}
             />
             <input
