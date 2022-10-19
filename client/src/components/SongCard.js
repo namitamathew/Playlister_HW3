@@ -34,9 +34,7 @@ function SongCard(props) {
         let sourceId = event.dataTransfer.getData("item");
         sourceId = sourceId.substring(sourceId.indexOf("-") + 1);
         setDraggedTo(false);
-        console.log(parseInt(sourceId.substring(0,1)));
-        console.log(targetId);
-        store.moveSong(parseInt(sourceId.substring(0,1)), parseInt(targetId.substring(0,1)));
+        store.addMoveSongTransaction(parseInt(sourceId.substring(0,1)), parseInt(targetId.substring(0,1)));
     }
 
     function handleEdit(event) {
@@ -57,6 +55,7 @@ function SongCard(props) {
     }
 
     function deleteSong(_id) {
+        store.song = song;
         store.showDeleteSongModal(_id);
         //store.editSong(_id);
     }

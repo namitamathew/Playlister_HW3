@@ -9,7 +9,12 @@ function DeleteSongModal() {
     }
 
     function handleConfirmDeleteSong(event) {
-        store.deleteSong();
+        console.log(store.songDeleteActive);
+        console.log(store.currentList.songs);
+
+        console.log('pr'+store.songDeleteActive, store.song.title, store.song.artist, store.song.youTubeId);
+
+        store.addRemoveSongTransaction(store, store.songDeleteActive, store.song.title, store.song.artist, store.song.youTubeId);
         store.hideDeleteSongModal();
     }
 

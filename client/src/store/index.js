@@ -1,6 +1,10 @@
 import { createContext, useState } from 'react'
 import jsTPS from '../common/jsTPS'
 import api from '../api'
+import AddSongTransaction from '../transactions/AddSongTransaction';
+import MoveSongTransaction from '../transactions/MoveSongTransaction';
+import RemoveSongTransaction from '../transactions/RemoveSongTransaction';
+import EditSongTransaction from '../transactions/EditSongTransaction';
 export const GlobalStoreContext = createContext({});
 /*
     This is our global data store. Note that it uses the Flux design pattern,
@@ -37,7 +41,9 @@ export const useGlobalStore = () => {
         listNameActive: false,
         songEditActive: -1,
         songDeleteActive: -1,
-        listMarkedForDeletion: null
+        listMarkedForDeletion: null,
+        song: null,
+        oldSong:null
     });
 
     // HERE'S THE DATA STORE'S REDUCER, IT MUST
@@ -190,10 +196,8 @@ export const useGlobalStore = () => {
                 let playlist = response.data.playlist;
                 async function getListPairs(playlist) {
                     response = await api.getPlaylistPairs();
-                    console.log(response.data.success);
                     if (response.data.success) {
                         let pairsArray = response.data.idNamePairs;
-                        console.log(pairsArray);
                         storeReducer({
                             type: GlobalStoreActionType.CREATE_NEW_LIST,
                             payload: {
@@ -213,12 +217,9 @@ export const useGlobalStore = () => {
     store.deleteList = function () {
         async function deleteList() {
             let listToDelete = store.listMarkedForDeletion;
-            console.log(listToDelete);
-            console.log(listToDelete.substring(12, listToDelete.toString().length));
             let response = await api.deletePlaylistById(listToDelete.substring(12, listToDelete.toString().length));
             if (response.data.success) {
                 let playlist = response.data.playlist;
-                console.log(playlist, 'list deleted')
             }
         }
         deleteList()
@@ -254,7 +255,6 @@ export const useGlobalStore = () => {
 
     store.setCurrentList = function (id) {
         async function asyncSetCurrentList(id) {
-            console.log(id);
             let response = await api.getPlaylistById(id);
             if (response.data.success) {
                 let playlist = response.data.playlist;
@@ -264,7 +264,6 @@ export const useGlobalStore = () => {
                         type: GlobalStoreActionType.SET_CURRENT_LIST,
                         payload: playlist
                     });
-                    console.log('success')
                     store.history.push("/playlist/" + playlist._id);
                 }
             }
@@ -331,16 +330,13 @@ export const useGlobalStore = () => {
     }
 
     store.markSongForEditing = function (id) {
-        console.log(store.currentList);
-        console.log(id);
         storeReducer({
             type: GlobalStoreActionType.SET_SONG_EDIT_ACTIVE,
             payload: id
         })
-        console.log(store.currentList);
+     
 
         this.showEditSongModal();
-        console.log(store.currentList);
         
     }
 
@@ -407,15 +403,16 @@ export const useGlobalStore = () => {
         }
 
 
-        store.refreshCurrentList(store.currentList._id);
+    store.refreshCurrentList(store.currentList._id);
         
     }
 
     store.showEditSongModal = function(id) {
-        console.log(id);
         document.getElementById("edit-song-modal-title-textfield").value = store.currentList.songs[id].title;
         document.getElementById("edit-song-modal-artist-textfield").value = store.currentList.songs[id].artist;
         document.getElementById("edit-song-modal-youTubeId-textfield").value = store.currentList.songs[id].youTubeId;
+        store.oldSong = {"title": document.getElementById("edit-song-modal-title-textfield").value,
+    "artist": document.getElementById("edit-song-modal-artist-textfield").value, "youTubeId": document.getElementById("edit-song-modal-youTubeId-textfield").value}
         let modal = document.getElementById("edit-song-modal");
         modal.classList.add("is-visible");
         store.songEditActive = id
@@ -439,22 +436,64 @@ export const useGlobalStore = () => {
     }
 
     store.deleteSong = function(id) {
-        console.log(store.songEditActive);
+
         store.currentList.songs.splice(store.songDeleteActive, 1);
-        console.log(store.currentList.songs)
         store.refreshCurrentList(store.currentList._id);
     }
+
+    store.addSongUndo = function(id) {
+        store.currentList.songs.splice(id, 1);
+        store.refreshCurrentList(store.currentList._id);
+    }
+
+
 
     store.editSong = function(id) {
         let songToEdit = store.songEditActive;
         //console.log(songToEdit.toString().substring(0,6));
+
         let songTitle = document.getElementById("edit-song-modal-title-textfield").value;
         let songArtist = document.getElementById("edit-song-modal-artist-textfield").value;
         let songYTiD = document.getElementById("edit-song-modal-youTubeId-textfield").value;
         store.currentList.songs[songToEdit].artist = songArtist;
         store.currentList.songs[songToEdit].title = songTitle;
         store.currentList.songs[songToEdit].youTubeId = songYTiD;
+        //store.addEditSongTransaction(store, store.songEditActive, store.oldSong.title, store.oldSong.artist, store.oldSong.youTubeId, songTitle, songArtist, songYTiD);
         store.refreshCurrentList(store.currentList._id);
+    }
+
+
+    store.addAddSongTransaction = () => {
+        let size = store.currentList.songs.length;
+        let transaction = new AddSongTransaction(store, size);
+        tps.addTransaction(transaction);
+        //this.refreshToolbars();
+
+    }
+
+    store.addMoveSongTransaction = (start, end) => {
+        let transaction = new MoveSongTransaction(store, start, end);
+        tps.addTransaction(transaction);
+        //this.refreshToolbars();
+    }
+
+    store.undoDeleteSong = (num, title, artist, youTubeID) => {
+        let list = store.currentList;
+        let song = {"title": title, "artist": artist, "youTubeId": youTubeID};
+        list.songs.splice(num, 0, song);
+        store.refreshCurrentList(store.currentList._id);
+    }
+
+    store.addRemoveSongTransaction = (store, index, title, artist, youTubeID) => {
+        let transaction = new RemoveSongTransaction(store, index, title, artist, youTubeID);
+        tps.addTransaction(transaction);
+        //this.refreshToolbars();
+    }
+
+    store.addEditSongTransaction = (index, oT, oA, oY, nT, nA, nY) => {
+        let transaction = new EditSongTransaction(store, index, oT, oA, oY, nT, nA, nY);
+        tps.addTransaction(transaction);
+        //this.refreshToolbars();
     }
 
 

@@ -17,7 +17,7 @@ function EditToolbar() {
         store.undo();
     }
     function handleAdd() {
-        store.addSong();
+        store.addAddSongTransaction();
     }
     function handleRedo() {
         store.redo();
